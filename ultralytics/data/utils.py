@@ -267,6 +267,7 @@ def check_det_dataset(dataset, autodownload=True):
     """
 
     file = check_file(dataset)
+    print(file)
 
     # Download (optional)
     extract_dir = ""

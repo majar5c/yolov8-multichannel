@@ -92,9 +92,10 @@ class Model(nn.Module):
 
     def __init__(
         self,
-        model: Union[str, Path] = "yolov8n.pt",
+        model: Union[str, Path] = "yolov8n.yaml",
         task: str = None,
         verbose: bool = False,
+        ch=3,
     ) -> None:
         """
         Initializes a new instance of the YOLO model class.
@@ -128,6 +129,7 @@ class Model(nn.Module):
         self.metrics = None  # validation/training metrics
         self.session = None  # HUB session
         self.task = task  # task type
+        self.overrides['ch'] = ch  # number of channels
         model = str(model).strip()
 
         # Check if Ultralytics HUB model from https://hub.ultralytics.com
