@@ -31,7 +31,7 @@ def test_npy_training_with_4_channels():
     save_as_npy = lambda img, path: np.save(f'{path}.npy', img)
     
     build_random_seg_dataset(DATASETS_DIR, dataset_name, 4, save_as_npy)
-    model = YOLO('yolov8n-seg.yaml')
+    model = YOLO('yolov8n-seg.yaml', ch=4)
     model.train(data=DATASETS_DIR / f'{dataset_name}/data.yaml', epochs=1, save=False)
 
 
