@@ -72,3 +72,5 @@ def build_random_seg_dataset(root, name, channel, save_callback):
         f.write("train: images/train\n")
         f.write("val: images/val\n")
         f.write("nc: 1\n")
+        
+test_npy_training_with_3_channels()
