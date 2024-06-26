@@ -26,6 +26,15 @@ def test_npy_training_with_3_channels():
     model = YOLO('yolov8n-seg.yaml')
     model.train(data=DATASETS_DIR / f'{dataset_name}/data.yaml', epochs=1, save=False)
 
+def test_npy_training_with_3_channels():
+    dataset_name = '4channel-npy'
+    save_as_npy = lambda img, path: np.save(f'{path}.npy', img)
+    
+    build_random_seg_dataset(DATASETS_DIR, dataset_name, 4, save_as_npy)
+    model = YOLO('yolov8n-seg.yaml')
+    model.train(data=DATASETS_DIR / f'{dataset_name}/data.yaml', epochs=1, save=False)
+
+
 
 
 
@@ -72,5 +81,3 @@ def build_random_seg_dataset(root, name, channel, save_callback):
         f.write("train: images/train\n")
         f.write("val: images/val\n")
         f.write("nc: 1\n")
-        
-test_npy_training_with_3_channels()
