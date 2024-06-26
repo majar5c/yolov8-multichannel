@@ -10,11 +10,19 @@ settingmgr = utils.SettingsManager()
 DATASETS_DIR = Path(settingmgr.defaults['datasets_dir'])
 
 def test_yaml_training_with_3_channels():
-    build_random_seg_dataset(DATASETS_DIR, 'multichannel')
-    model = YOLO('yolov8n-seg.yaml')
-    model.train(data=DATASETS_DIR / 'multichannel/data.yaml', epochs=1, save=False)
+    dataset_name = '3channel'
+    save_as_image = lambda img, path: Image.fromarray(img).save(path)
     
-def build_random_seg_dataset(root, name):
+    build_random_seg_dataset(DATASETS_DIR, dataset_name, 3, save_as_image)
+    model = YOLO('yolov8n-seg.yaml')
+    model.train(data=DATASETS_DIR / f'{dataset_name}/data.yaml', epochs=1, save=False)
+    
+def build_random_seg_dataset(root, name, channel, save_callback):
+    """
+    Create a random dataset for testing segmentation tasks.
+    """
+    
+    # Create dataset directory
     dataset = Path(root) / name
     
     # Create directories and remove existing files
@@ -27,18 +35,18 @@ def build_random_seg_dataset(root, name):
     # Create 6 random images and labels for yolov8 segmentation
     for phase in ['train', 'val']:
         for i in range(6):
-            img = np.random.randint(0, 256, size=(32, 32, 3), dtype=np.uint8)
+            img = np.random.randint(0, 256, size=(32, 32, channel), dtype=np.uint8)
             
             label = np.random.random((4)) * 0.5
             label.sort() ## get a xyxy polygon
-
-            Image.fromarray(img).save(dataset / f'images/{phase}/{i}.jpg')
+            
+            save_callback(img, dataset / f'images/{phase}/{i}.jpg')
             
             with open(dataset / f'labels/{phase}/{i}.txt', 'w') as f:
                 f.write('0')  ## class
                 
                 ## bbox
-                for j in label:  
+                for j in label:
                     f.write(f' {j}')
                 
                 ## mask
