@@ -26,7 +26,7 @@ def test_npy_training_with_3_channels():
     model = YOLO('yolov8n-seg.yaml')
     model.train(data=DATASETS_DIR / f'{dataset_name}/data.yaml', epochs=1, save=False)
 
-def test_npy_training_with_3_channels():
+def test_npy_training_with_4_channels():
     dataset_name = '4channel-npy'
     save_as_npy = lambda img, path: np.save(f'{path}.npy', img)
     
