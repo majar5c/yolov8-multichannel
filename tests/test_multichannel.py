@@ -1,5 +1,4 @@
 from ultralytics import utils
-import pytest
 import shutil
 from pathlib import Path
 from PIL import Image
