@@ -429,7 +429,10 @@ class Model(nn.Module):
         )
 
         custom = {"conf": 0.25, "batch": 1, "save": is_cli, "mode": "predict"}  # method defaults
+        print('model!')
+        print(f'overrides:{self.overrides}')
         args = {**self.overrides, **custom, **kwargs}  # highest priority args on the right
+        print(f'args:{self.args}')
         prompts = args.pop("prompts", None)  # for SAM-type models
 
         if not self.predictor:
