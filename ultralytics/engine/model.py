@@ -10,7 +10,7 @@ import torch
 from ultralytics.cfg import TASK2DATA, get_cfg, get_save_dir
 from ultralytics.engine.results import Results
 from ultralytics.hub import HUB_WEB_ROOT, HUBTrainingSession
-from ultralytics.nn.tasks import attempt_load_one_weight, guess_model_task, nn, yaml_model_load
+from ultralytics.nn.tasks import BaseModel, attempt_load_one_weight, guess_model_task, nn, yaml_model_load
 from ultralytics.utils import (
     ARGV,
     ASSETS,
@@ -193,6 +193,28 @@ class Model(nn.Module):
                 len(model) == 20 and not Path(model).exists() and all(x not in model for x in "./\\"),  # MODEL
             )
         )
+        
+    @staticmethod
+    def _update_input_channel(model: BaseModel, ch: int):
+        """Update the input channel of the model."""
+        
+        input_layer = [i for i in model.model.children()][0]
+        conv = input_layer.conv
+        input_layer.conv = torch.nn.Conv2d(
+            ch, 
+            conv.out_channels, 
+            conv.kernel_size, 
+            conv.stride, 
+            conv.padding, 
+            conv.dilation, 
+            conv.groups, 
+            conv.bias, 
+            conv.padding_mode, 
+            conv.weight.device, 
+            conv.weight.dtype)
+        model.args['ch'] = model.yaml['ch'] = ch
+
+        return model
 
     def _new(self, cfg: str, task=None, model=None, verbose=False) -> None:
         """
@@ -231,6 +253,7 @@ class Model(nn.Module):
         if Path(weights).suffix == ".pt":
             self.model, self.ckpt = attempt_load_one_weight(weights)
             self.task = self.model.args["task"]
+            self.model = self._update_input_channel(self.model, self.overrides['ch'])
             self.overrides = self.model.args = self._reset_ckpt_args(self.model.args)
             self.ckpt_path = self.model.pt_path
         else:
@@ -637,6 +660,7 @@ class Model(nn.Module):
             # NOTE: handle the case when 'cfg' includes 'data'.
             "data": overrides.get("data") or DEFAULT_CFG_DICT["data"] or TASK2DATA[self.task],
             "model": self.overrides["model"],
+            "ch": self.overrides["ch"],
             "task": self.task,
         }  # method defaults
         args = {**overrides, **custom, **kwargs, "mode": "train"}  # highest priority args on the right
@@ -793,7 +817,7 @@ class Model(nn.Module):
     @staticmethod
     def _reset_ckpt_args(args: dict) -> dict:
         """Reset arguments when loading a PyTorch model."""
-        include = {"imgsz", "data", "task", "single_cls"}  # only remember these arguments when loading a PyTorch model
+        include = {"imgsz", "data", "task", "single_cls", "ch"}  # only remember these arguments when loading a PyTorch model
         return {k: v for k, v in args.items() if k in include}
 
     # def __getattr__(self, attr):
